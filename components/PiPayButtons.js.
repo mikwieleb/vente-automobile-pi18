@@ -1,29 +1,31 @@
-import React from 'react';
 import { createPiPayment } from '../utils/pi';
 
-const PiPayButtons = () => {
-  const handlePiPayment = async () => {
+export default function PiPayButtons() {
+  const handlePayment = async () => {
     try {
-      await createPiPayment(0.001, 'Paiement voiture');
+      const paymentData = {
+        amount: 0.001,
+        memo: "Paiement test Pi Network",
+        metadata: { custom: "data" }
+      };
+
+      await createPiPayment(paymentData);
     } catch (error) {
-      console.error('Erreur paiement Pi :', error);
+      console.error('Erreur de paiement :', error);
     }
   };
 
-  const handleOpenApp = () => {
-    window.location.href = 'https://vente-automobile-pi-g6hd.vercel.app';
-  };
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <button onClick={handlePiPayment} style={{ padding: '12px', fontSize: '16px' }}>
+    <div>
+      <button onClick={handlePayment} style={{ margin: '10px', padding: '10px' }}>
         Payer 0,001 Pi
       </button>
-      <button onClick={handleOpenApp} style={{ padding: '12px', fontSize: '16px' }}>
+      <button
+        onClick={() => window.open('https://pi.app/your-app-id', '_blank')}
+        style={{ margin: '10px', padding: '10px' }}
+      >
         Ouvrir l'application
       </button>
     </div>
   );
-};
-
-export default PiPayButtons;
+}

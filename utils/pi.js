@@ -1,13 +1,18 @@
+// utils/pi.js
 export async function createPiPayment({ amount, memo, metadata }) {
-  if (!window.Pi) {
-    throw new Error('Pi SDK non disponible');
+  if (typeof window === "undefined" || !window.Pi) {
+    console.error("Pi SDK non disponible dans cet environnement");
+    return;
   }
 
   try {
-    // Initialisation du Pi SDK
-    await window.Pi.init();
+    // Initialisation du Pi SDK, s'il n'est pas déjà initialisé
+    if (!window.Pi.isInitialized) {
+      console.log("Initialisation du SDK Pi...");
+      await window.Pi.init();  // Initialise le Pi SDK
+      window.Pi.isInitialized = true;  // Marquer comme initialisé
+    }
 
-    const scopes = ['payments'];  // Définir les autorisations
     const payment = await window.Pi.createPayment({
       amount,
       memo,
@@ -37,6 +42,6 @@ export async function createPiPayment({ amount, memo, metadata }) {
 
     console.log('Paiement initié :', payment);
   } catch (error) {
-    console.error('Erreur lors de l\'initialisation du Pi SDK :', error);
+    console.error('Erreur lors de l\'initialisation du Pi SDK ou du paiement :', error);
   }
 }

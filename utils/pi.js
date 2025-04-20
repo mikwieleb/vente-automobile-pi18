@@ -1,43 +1,35 @@
-export const createPiPayment = async (amount, memo) => {
+export async function createPiPayment({ amount, memo, metadata }) {
   if (!window.Pi) {
-    alert('Merci d’utiliser le Pi Browser pour effectuer le paiement.');
-    return;
+    throw new Error('Pi SDK non disponible');
   }
 
-  const paymentData = {
+  const scopes = ['payments'];
+  const payment = await window.Pi.createPayment({
     amount,
     memo,
-    metadata: { type: 'car_purchase' }
-  };
+    metadata
+  }, {
+    onReadyForServerApproval: async (paymentId) => {
+      await fetch('/api/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentId })
+      });
+    },
+    onReadyForServerCompletion: async (paymentId, txid) => {
+      await fetch('/api/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentId, txid })
+      });
+    },
+    onCancel: (paymentId) => {
+      console.log('Paiement annulé', paymentId);
+    },
+    onError: (error, paymentId) => {
+      console.error('Erreur de paiement', error, paymentId);
+    }
+  });
 
-  try {
-    const payment = await window.Pi.createPayment(paymentData, {
-      onReadyForServerApproval: async (paymentId) => {
-        await fetch('/api/approve', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ paymentId }),
-        });
-      },
-      onReadyForServerCompletion: async (paymentId, txid) => {
-        await fetch('/api/complete', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ paymentId, txid }),
-        });
-        alert('Paiement confirmé ! Merci.');
-      },
-      onCancel: (paymentId) => {
-        alert('Paiement annulé.');
-      },
-      onError: (error, paymentId) => {
-        alert('Une erreur est survenue.');
-        console.error(error, paymentId);
-      }
-    });
-
-    console.log('Paiement initié :', payment);
-  } catch (error) {
-    console.error('Erreur de paiement Pi :', error);
-  }
-};
+  console.log('Paiement initié :', payment);
+}

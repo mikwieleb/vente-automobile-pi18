@@ -7,7 +7,7 @@ export async function createPiPayment({ amount, memo, metadata }) {
     // Initialisation du Pi SDK
     await window.Pi.init();
 
-    const scopes = ['payments'];
+    const scopes = ['payments'];  // Définir les autorisations
     const payment = await window.Pi.createPayment({
       amount,
       memo,
